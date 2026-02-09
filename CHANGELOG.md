@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.0] - 2026-02-09
+
+### Added
+- AI-powered salary negotiation chat using Anthropic Claude (via Vercel AI SDK v6)
+- API route `/api/chat` with streaming responses
+- Three negotiation personas: Friendly Recruiter, Tough Hiring Manager, HR Budget Holder
+- Real-time chat interface with message streaming and typing indicators
+- Scenario context passed to AI (role, salary, industry, company size, experience)
+
 ## [0.1.0] - 2026-02-09
 
 ### Added

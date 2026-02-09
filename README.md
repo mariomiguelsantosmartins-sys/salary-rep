@@ -20,7 +20,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - **Framework:** Next.js 16 (App Router)
 - **Styling:** Tailwind CSS 4
 - **Font:** Geist (by Vercel)
-- **AI:** Anthropic Claude (via Vercel AI SDK) — coming soon
+- **AI:** Anthropic Claude (via Vercel AI SDK v6)
 - **Database & Auth:** Supabase — coming soon
 - **Payments:** Stripe — coming soon
 - **Deployment:** Vercel
@@ -34,5 +34,16 @@ src/
     layout.tsx        — Root layout with metadata
     globals.css       — Design tokens and global styles
     practice/
-      page.tsx        — Scenario setup form
+      page.tsx        — Scenario setup + negotiation chat
+    api/
+      chat/
+        route.ts      — AI chat streaming endpoint
+```
+
+## Environment variables
+
+Create a `.env.local` file with:
+
+```
+ANTHROPIC_API_KEY=sk-ant-...
 ```
