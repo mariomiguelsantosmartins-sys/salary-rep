@@ -34,10 +34,12 @@ src/
     layout.tsx        — Root layout with metadata
     globals.css       — Design tokens and global styles
     practice/
-      page.tsx        — Scenario setup + negotiation chat
+      page.tsx        — Scenario setup, negotiation chat, and session feedback
     api/
       chat/
         route.ts      — AI chat streaming endpoint
+      feedback/
+        route.ts      — AI session analysis and structured feedback
 ```
 
 ## Environment variables

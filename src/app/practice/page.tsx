@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { useState, useRef, useEffect, useMemo } from "react";
+import type { Feedback } from "@/app/api/feedback/route";
 
 const industries = [
   "Technology",
@@ -64,12 +65,20 @@ type Scenario = {
   persona: string;
 };
 
-function getTextFromMessage(message: { parts: Array<{ type: string; text?: string }> }): string {
+function getTextFromMessage(message: {
+  parts: Array<{ type: string; text?: string }>;
+}): string {
   return message.parts
-    .filter((part): part is { type: "text"; text: string } => part.type === "text")
+    .filter(
+      (part): part is { type: "text"; text: string } => part.type === "text"
+    )
     .map((part) => part.text)
     .join("");
 }
+
+/* ------------------------------------------------------------------ */
+/*  Setup Form                                                        */
+/* ------------------------------------------------------------------ */
 
 function SetupForm({ onStart }: { onStart: (scenario: Scenario) => void }) {
   const [role, setRole] = useState("");
@@ -262,12 +271,18 @@ function SetupForm({ onStart }: { onStart: (scenario: Scenario) => void }) {
   );
 }
 
+/* ------------------------------------------------------------------ */
+/*  Negotiation Chat                                                  */
+/* ------------------------------------------------------------------ */
+
 function NegotiationChat({
   scenario,
   onReset,
+  onEndSession,
 }: {
   scenario: Scenario;
   onReset: () => void;
+  onEndSession: (messages: UIMessage[]) => void;
 }) {
   const [input, setInput] = useState("");
   const transport = useMemo(
@@ -294,6 +309,7 @@ function NegotiationChat({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const isActive = status === "streaming" || status === "submitted";
+  const hasEnoughMessages = messages.length >= 3;
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -328,12 +344,23 @@ function NegotiationChat({
               {scenario.targetSalary}
             </p>
           </div>
-          <button
-            onClick={onReset}
-            className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-card-hover"
-          >
-            New scenario
-          </button>
+          <div className="flex items-center gap-2">
+            {hasEnoughMessages && (
+              <button
+                onClick={() => onEndSession(messages)}
+                disabled={isActive}
+                className="rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
+              >
+                End session &amp; get feedback
+              </button>
+            )}
+            <button
+              onClick={onReset}
+              className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-card-hover"
+            >
+              New scenario
+            </button>
+          </div>
         </div>
       </div>
 
@@ -422,8 +449,261 @@ function NegotiationChat({
   );
 }
 
+/* ------------------------------------------------------------------ */
+/*  Score Ring                                                        */
+/* ------------------------------------------------------------------ */
+
+function ScoreRing({ score }: { score: number }) {
+  const radius = 40;
+  const circumference = 2 * Math.PI * radius;
+  const progress = (score / 10) * circumference;
+  const color =
+    score >= 8
+      ? "text-green-500"
+      : score >= 5
+        ? "text-yellow-500"
+        : "text-red-500";
+
+  return (
+    <div className="relative inline-flex items-center justify-center">
+      <svg width="100" height="100" className="-rotate-90" aria-hidden="true">
+        <circle
+          cx="50"
+          cy="50"
+          r={radius}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="6"
+          className="text-border"
+        />
+        <circle
+          cx="50"
+          cy="50"
+          r={radius}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="6"
+          strokeDasharray={circumference}
+          strokeDashoffset={circumference - progress}
+          strokeLinecap="round"
+          className={color}
+        />
+      </svg>
+      <span className="absolute text-2xl font-bold">{score}</span>
+      <span className="absolute mt-8 text-xs text-muted">/10</span>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Session Feedback                                                  */
+/* ------------------------------------------------------------------ */
+
+function SessionFeedback({
+  feedback,
+  onTryAgain,
+  onNewScenario,
+}: {
+  feedback: Feedback;
+  onTryAgain: () => void;
+  onNewScenario: () => void;
+}) {
+  return (
+    <main className="mx-auto max-w-2xl px-6 py-12 sm:py-16">
+      {/* Header + Score */}
+      <div className="mb-10 text-center">
+        <p className="mb-2 text-sm font-medium uppercase tracking-widest text-accent">
+          Session Feedback
+        </p>
+        <h1 className="mb-6 text-3xl font-bold tracking-tight">
+          Here&rsquo;s how you did
+        </h1>
+        <ScoreRing score={feedback.overallScore} />
+        <div className="mt-4 flex items-center justify-center gap-6 text-sm">
+          <div>
+            <span className="text-muted">Target</span>
+            <p className="font-semibold">${feedback.targetSalary}</p>
+          </div>
+          <div className="h-8 w-px bg-border" aria-hidden="true" />
+          <div>
+            <span className="text-muted">Final offer</span>
+            <p className="font-semibold">${feedback.finalOffer}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Summary */}
+      <div className="mb-8 rounded-2xl border border-border bg-card p-6">
+        <h2 className="mb-2 text-sm font-semibold uppercase tracking-widest text-muted">
+          Summary
+        </h2>
+        <p className="text-sm leading-relaxed">{feedback.summary}</p>
+      </div>
+
+      {/* Strengths */}
+      <div className="mb-8">
+        <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-muted">
+          <svg
+            className="h-4 w-4 text-green-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={2}
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="m4.5 12.75 6 6 9-13.5"
+            />
+          </svg>
+          What you did well
+        </h2>
+        <div className="space-y-4">
+          {feedback.strengths.map((s, i) => (
+            <div
+              key={i}
+              className="rounded-2xl border border-border bg-card p-5"
+            >
+              <p className="mb-2 text-sm font-medium">{s.point}</p>
+              <p className="border-l-2 border-accent pl-3 text-sm italic text-muted">
+                &ldquo;{s.quote}&rdquo;
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Weaknesses */}
+      <div className="mb-8">
+        <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-muted">
+          <svg
+            className="h-4 w-4 text-yellow-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={2}
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
+            />
+          </svg>
+          Where you can improve
+        </h2>
+        <div className="space-y-4">
+          {feedback.weaknesses.map((w, i) => (
+            <div
+              key={i}
+              className="rounded-2xl border border-border bg-card p-5"
+            >
+              <p className="mb-2 text-sm font-medium">{w.point}</p>
+              <p className="mb-3 border-l-2 border-yellow-500 pl-3 text-sm italic text-muted">
+                &ldquo;{w.quote}&rdquo;
+              </p>
+              <p className="text-sm">
+                <span className="font-medium text-accent">Try instead: </span>
+                {w.suggestion}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Tips */}
+      <div className="mb-10">
+        <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-muted">
+          <svg
+            className="h-4 w-4 text-accent"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={2}
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"
+            />
+          </svg>
+          Tips for next time
+        </h2>
+        <div className="space-y-3">
+          {feedback.tips.map((tip, i) => (
+            <div
+              key={i}
+              className="flex items-start gap-3 rounded-2xl border border-border bg-card p-4"
+            >
+              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent-light font-mono text-xs font-bold text-accent">
+                {i + 1}
+              </span>
+              <p className="text-sm leading-relaxed">{tip}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <button
+          onClick={onTryAgain}
+          className="inline-flex h-12 flex-1 items-center justify-center rounded-full bg-accent text-base font-medium text-white transition-colors hover:bg-accent-hover"
+        >
+          Try same scenario again
+        </button>
+        <button
+          onClick={onNewScenario}
+          className="inline-flex h-12 flex-1 items-center justify-center rounded-full border border-border text-base font-medium transition-colors hover:bg-card-hover"
+        >
+          New scenario
+        </button>
+      </div>
+    </main>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Page Root                                                         */
+/* ------------------------------------------------------------------ */
+
+type View =
+  | { step: "setup" }
+  | { step: "chat"; scenario: Scenario }
+  | { step: "loading-feedback"; scenario: Scenario }
+  | { step: "feedback"; scenario: Scenario; feedback: Feedback };
+
 export default function PracticePage() {
-  const [scenario, setScenario] = useState<Scenario | null>(null);
+  const [view, setView] = useState<View>({ step: "setup" });
+
+  const handleEndSession = async (
+    scenario: Scenario,
+    messages: UIMessage[]
+  ) => {
+    setView({ step: "loading-feedback", scenario });
+
+    const serialized = messages.map((m) => ({
+      role: m.role,
+      content: getTextFromMessage(m),
+    }));
+
+    try {
+      const res = await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: serialized, scenario }),
+      });
+
+      if (!res.ok) throw new Error("Feedback request failed");
+
+      const feedback: Feedback = await res.json();
+      setView({ step: "feedback", scenario, feedback });
+    } catch {
+      setView({ step: "chat", scenario });
+    }
+  };
 
   return (
     <div className="min-h-screen">
@@ -435,14 +715,36 @@ export default function PracticePage() {
         </div>
       </header>
 
-      {scenario ? (
-        <NegotiationChat
-          key={JSON.stringify(scenario)}
-          scenario={scenario}
-          onReset={() => setScenario(null)}
+      {view.step === "setup" && (
+        <SetupForm
+          onStart={(scenario) => setView({ step: "chat", scenario })}
         />
-      ) : (
-        <SetupForm onStart={setScenario} />
+      )}
+
+      {view.step === "chat" && (
+        <NegotiationChat
+          key={JSON.stringify(view.scenario)}
+          scenario={view.scenario}
+          onReset={() => setView({ step: "setup" })}
+          onEndSession={(messages) =>
+            handleEndSession(view.scenario, messages)
+          }
+        />
+      )}
+
+      {view.step === "loading-feedback" && (
+        <main className="flex min-h-[60vh] flex-col items-center justify-center px-6">
+          <div className="mb-4 h-8 w-8 animate-spin rounded-full border-2 border-border border-t-accent" />
+          <p className="text-sm text-muted">Analyzing your negotiation...</p>
+        </main>
+      )}
+
+      {view.step === "feedback" && (
+        <SessionFeedback
+          feedback={view.feedback}
+          onTryAgain={() => setView({ step: "chat", scenario: view.scenario })}
+          onNewScenario={() => setView({ step: "setup" })}
+        />
       )}
     </div>
   );

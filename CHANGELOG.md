@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.3.0] - 2026-02-09
+
+### Added
+- Session feedback feature: AI analyzes completed negotiations and provides structured coaching
+- Feedback API route `/api/feedback` using structured output (Zod schema) for consistent results
+- Score ring visualization showing overall performance (1-10)
+- Strengths section with direct quotes from the conversation
+- Weaknesses section with quotes and concrete "try instead" suggestions
+- Actionable tips list for the next negotiation
+- Loading state with spinner during feedback analysis
+- "Try same scenario again" and "New scenario" buttons after feedback
+- "End session & get feedback" button appears after 3+ messages in chat
+
 ## [0.2.0] - 2026-02-09
 
 ### Added
