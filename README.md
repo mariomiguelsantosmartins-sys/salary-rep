@@ -21,7 +21,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - **Styling:** Tailwind CSS 4
 - **Font:** Geist (by Vercel)
 - **AI:** Anthropic Claude (via Vercel AI SDK v6)
-- **Database & Auth:** Supabase — coming soon
+- **Database:** Supabase (lead storage)
 - **Payments:** Stripe — coming soon
 - **Deployment:** Vercel
 
@@ -40,6 +40,10 @@ src/
         route.ts      — AI chat streaming endpoint
       feedback/
         route.ts      — AI session analysis and structured feedback
+      leads/
+        route.ts      — Save lead emails to Supabase
+  lib/
+    supabase.ts       — Supabase client instance
 ```
 
 ## Environment variables
@@ -48,4 +52,6 @@ Create a `.env.local` file with:
 
 ```
 ANTHROPIC_API_KEY=sk-ant-...
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ```

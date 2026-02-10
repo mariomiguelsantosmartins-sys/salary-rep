@@ -725,6 +725,7 @@ function incrementSessionCount(): void {
 function EmailCapture({ onComplete }: { onComplete: () => void }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const isValid = name.trim() && email.trim() && email.includes("@");
 
@@ -744,11 +745,21 @@ function EmailCapture({ onComplete }: { onComplete: () => void }) {
       </div>
 
       <form
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
-          if (!isValid) return;
+          if (!isValid || saving) return;
+          setSaving(true);
           localStorage.setItem(STORAGE_KEY_NAME, name.trim());
           localStorage.setItem(STORAGE_KEY_EMAIL, email.trim());
+          try {
+            await fetch("/api/leads", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ name: name.trim(), email: email.trim() }),
+            });
+          } catch {
+            // Supabase save failed silently — localStorage still works as fallback
+          }
           onComplete();
         }}
         className="space-y-4"
@@ -781,10 +792,10 @@ function EmailCapture({ onComplete }: { onComplete: () => void }) {
         </div>
         <button
           type="submit"
-          disabled={!isValid}
+          disabled={!isValid || saving}
           className="inline-flex h-12 w-full items-center justify-center rounded-full bg-accent text-base font-medium text-white transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
         >
-          Unlock free sessions
+          {saving ? "Starting..." : "Unlock free sessions"}
         </button>
         <p className="text-center text-xs text-muted">
           No credit card required. We&rsquo;ll only email you if you ask us to.

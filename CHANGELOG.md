@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.5.0] - 2026-02-09
+
+### Added
+- Supabase integration for lead storage (email + name persisted to `leads` table)
+- Supabase client utility (`src/lib/supabase.ts`)
+- API route `/api/leads` for saving lead data with validation and upsert logic
+- Loading state on email capture form during save
+- Graceful fallback: localStorage still works if Supabase is unreachable
+
 ## [0.4.0] - 2026-02-09
 
 ### Added
