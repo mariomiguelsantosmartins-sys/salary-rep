@@ -2,7 +2,7 @@ import { anthropic } from "@ai-sdk/anthropic";
 import { generateObject } from "ai";
 import { z } from "zod";
 
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 const feedbackSchema = z.object({
   overallScore: z

@@ -891,6 +891,7 @@ type View =
   | { step: "chat"; scenario: Scenario }
   | { step: "loading-feedback"; scenario: Scenario }
   | { step: "feedback"; scenario: Scenario; feedback: Feedback }
+  | { step: "feedback-error"; scenario: Scenario }
   | { step: "upgrade" };
 
 export default function PracticePage() {
@@ -951,7 +952,7 @@ export default function PracticePage() {
       const feedback: Feedback = await res.json();
       handleFeedbackViewed(scenario, feedback);
     } catch {
-      setView({ step: "chat", scenario });
+      setView({ step: "feedback-error", scenario });
     }
   };
 
@@ -999,6 +1000,30 @@ export default function PracticePage() {
         <main className="flex min-h-[60vh] flex-col items-center justify-center px-6">
           <div className="mb-4 h-8 w-8 animate-spin rounded-full border-2 border-border border-t-accent" />
           <p className="text-sm text-muted">Analyzing your negotiation...</p>
+        </main>
+      )}
+
+      {view.step === "feedback-error" && (
+        <main className="flex min-h-[60vh] flex-col items-center justify-center px-6">
+          <div className="mx-auto max-w-sm text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-950">
+              <svg className="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+              </svg>
+            </div>
+            <h2 className="mb-2 text-lg font-semibold">Feedback failed</h2>
+            <p className="mb-6 text-sm text-muted">
+              The analysis took too long or something went wrong. Your negotiation session is still valid — let&rsquo;s try getting feedback again.
+            </p>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <button
+                onClick={() => setView({ step: "setup" })}
+                className="inline-flex h-11 flex-1 items-center justify-center rounded-full border border-border text-sm font-medium transition-colors hover:bg-card-hover"
+              >
+                New scenario
+              </button>
+            </div>
+          </div>
         </main>
       )}
 
