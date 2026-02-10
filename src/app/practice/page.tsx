@@ -272,6 +272,36 @@ function SetupForm({ onStart }: { onStart: (scenario: Scenario) => void }) {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Coaching Hint                                                     */
+/* ------------------------------------------------------------------ */
+
+function CoachingHint({
+  messageCount,
+  targetSalary,
+}: {
+  messageCount: number;
+  targetSalary: string;
+}) {
+  const hints = [
+    `Their offer is below your $${targetSalary} target. Counter with your number and explain why you're worth it — mention experience, skills, or market data.`,
+    "They pushed back. Stay firm — restate your value and ask what flexibility they have. Don't apologize for your ask.",
+    "Good back-and-forth. Consider negotiating beyond base salary — ask about equity, signing bonus, or an earlier performance review.",
+    "You're deep in the negotiation. Hold your ground or find a creative compromise. When you're ready, click \"End session & get feedback\" above.",
+  ];
+
+  const hintIndex = Math.min(Math.floor((messageCount - 2) / 2), hints.length - 1);
+
+  return (
+    <div className="border-t border-border bg-accent-light px-6 py-3">
+      <p className="mx-auto max-w-2xl text-xs leading-relaxed text-accent">
+        <span className="font-semibold">Tip: </span>
+        {hints[hintIndex]}
+      </p>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /*  Negotiation Chat                                                  */
 /* ------------------------------------------------------------------ */
 
@@ -415,6 +445,11 @@ function NegotiationChat({
           <div ref={messagesEndRef} />
         </div>
       </div>
+
+      {/* Coaching hint */}
+      {!isActive && !input && messages.length >= 2 && (
+        <CoachingHint messageCount={messages.length} targetSalary={scenario.targetSalary} />
+      )}
 
       {/* Input */}
       <div className="border-t border-border px-6 py-4">
