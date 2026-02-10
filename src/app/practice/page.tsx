@@ -555,12 +555,12 @@ function SessionFeedback({
         <div className="mt-4 flex items-center justify-center gap-6 text-sm">
           <div>
             <span className="text-muted">Target</span>
-            <p className="font-semibold">${feedback.targetSalary}</p>
+            <p className="font-semibold">{feedback.targetSalary.replace(/^\$+/, "$")}</p>
           </div>
           <div className="h-8 w-px bg-border" aria-hidden="true" />
           <div>
             <span className="text-muted">Final offer</span>
-            <p className="font-semibold">${feedback.finalOffer}</p>
+            <p className="font-semibold">{feedback.finalOffer.replace(/^\$+/, "$")}</p>
           </div>
         </div>
       </div>
