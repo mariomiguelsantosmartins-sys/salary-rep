@@ -699,17 +699,223 @@ function SessionFeedback({
 }
 
 /* ------------------------------------------------------------------ */
+/*  Email Capture                                                     */
+/* ------------------------------------------------------------------ */
+
+const FREE_SESSION_LIMIT = 3;
+const STORAGE_KEY_EMAIL = "salaryrep_email";
+const STORAGE_KEY_NAME = "salaryrep_name";
+const STORAGE_KEY_SESSIONS = "salaryrep_sessions";
+
+function getStoredEmail(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(STORAGE_KEY_EMAIL);
+}
+
+function getSessionCount(): number {
+  if (typeof window === "undefined") return 0;
+  return parseInt(localStorage.getItem(STORAGE_KEY_SESSIONS) || "0", 10);
+}
+
+function incrementSessionCount(): void {
+  const current = getSessionCount();
+  localStorage.setItem(STORAGE_KEY_SESSIONS, String(current + 1));
+}
+
+function EmailCapture({ onComplete }: { onComplete: () => void }) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+
+  const isValid = name.trim() && email.trim() && email.includes("@");
+
+  return (
+    <main className="mx-auto max-w-md px-6 py-20 sm:py-28">
+      <div className="text-center">
+        <p className="mb-2 text-sm font-medium uppercase tracking-widest text-accent">
+          Free trial
+        </p>
+        <h1 className="mb-3 text-3xl font-bold tracking-tight">
+          Start practicing
+        </h1>
+        <p className="mb-10 text-muted">
+          Enter your name and email to unlock {FREE_SESSION_LIMIT} free
+          negotiation sessions with AI-powered feedback.
+        </p>
+      </div>
+
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (!isValid) return;
+          localStorage.setItem(STORAGE_KEY_NAME, name.trim());
+          localStorage.setItem(STORAGE_KEY_EMAIL, email.trim());
+          onComplete();
+        }}
+        className="space-y-4"
+      >
+        <div>
+          <label htmlFor="name" className="mb-2 block text-sm font-medium">
+            First name
+          </label>
+          <input
+            id="name"
+            type="text"
+            placeholder="e.g. Alex"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="h-12 w-full rounded-xl border border-border bg-card px-4 text-sm outline-none transition-colors placeholder:text-muted focus:border-accent"
+          />
+        </div>
+        <div>
+          <label htmlFor="email" className="mb-2 block text-sm font-medium">
+            Email
+          </label>
+          <input
+            id="email"
+            type="email"
+            placeholder="alex@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="h-12 w-full rounded-xl border border-border bg-card px-4 text-sm outline-none transition-colors placeholder:text-muted focus:border-accent"
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={!isValid}
+          className="inline-flex h-12 w-full items-center justify-center rounded-full bg-accent text-base font-medium text-white transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Unlock free sessions
+        </button>
+        <p className="text-center text-xs text-muted">
+          No credit card required. We&rsquo;ll only email you if you ask us to.
+        </p>
+      </form>
+    </main>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Upgrade Wall                                                      */
+/* ------------------------------------------------------------------ */
+
+function UpgradeWall() {
+  return (
+    <main className="mx-auto max-w-lg px-6 py-20 sm:py-28">
+      <div className="text-center">
+        <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-accent-light">
+          <svg
+            className="h-7 w-7 text-accent"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+            />
+          </svg>
+        </div>
+        <h1 className="mb-3 text-3xl font-bold tracking-tight">
+          You&rsquo;ve used your free sessions
+        </h1>
+        <p className="mb-8 text-muted">
+          You completed {FREE_SESSION_LIMIT} practice negotiations — great
+          start. Upgrade to keep building your confidence with unlimited
+          sessions and deeper coaching.
+        </p>
+      </div>
+
+      <div className="space-y-4">
+        <div className="rounded-2xl border border-accent bg-accent-light p-6">
+          <div className="mb-1 flex items-baseline justify-between">
+            <h3 className="text-lg font-semibold">Basic</h3>
+            <span className="text-lg font-bold">
+              $9.99<span className="text-sm font-normal text-muted">/mo</span>
+            </span>
+          </div>
+          <p className="mb-4 text-sm text-muted">
+            Unlimited sessions, all personas, detailed feedback, session
+            history.
+          </p>
+          <button className="inline-flex h-11 w-full items-center justify-center rounded-full bg-accent text-sm font-medium text-white transition-colors hover:bg-accent-hover">
+            Upgrade to Basic
+          </button>
+        </div>
+
+        <div className="rounded-2xl border border-border bg-card p-6">
+          <div className="mb-1 flex items-baseline justify-between">
+            <h3 className="text-lg font-semibold">Pro</h3>
+            <span className="text-lg font-bold">
+              $29.99<span className="text-sm font-normal text-muted">/mo</span>
+            </span>
+          </div>
+          <p className="mb-4 text-sm text-muted">
+            Everything in Basic plus personalized coaching, advanced analytics,
+            and industry-specific scenarios.
+          </p>
+          <button className="inline-flex h-11 w-full items-center justify-center rounded-full border border-border text-sm font-medium transition-colors hover:bg-card-hover">
+            Upgrade to Pro
+          </button>
+        </div>
+      </div>
+
+      <p className="mt-6 text-center text-xs text-muted">
+        Payment coming soon. Leave your email and we&rsquo;ll notify you when
+        plans are available.
+      </p>
+    </main>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /*  Page Root                                                         */
 /* ------------------------------------------------------------------ */
 
 type View =
+  | { step: "email-capture" }
   | { step: "setup" }
   | { step: "chat"; scenario: Scenario }
   | { step: "loading-feedback"; scenario: Scenario }
-  | { step: "feedback"; scenario: Scenario; feedback: Feedback };
+  | { step: "feedback"; scenario: Scenario; feedback: Feedback }
+  | { step: "upgrade" };
 
 export default function PracticePage() {
-  const [view, setView] = useState<View>({ step: "setup" });
+  const [view, setView] = useState<View>({ step: "email-capture" });
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const hasEmail = getStoredEmail();
+    const sessions = getSessionCount();
+
+    if (!hasEmail) {
+      setView({ step: "email-capture" });
+    } else if (sessions >= FREE_SESSION_LIMIT) {
+      setView({ step: "upgrade" });
+    } else {
+      setView({ step: "setup" });
+    }
+    setReady(true);
+  }, []);
+
+  const handleEmailComplete = () => {
+    setView({ step: "setup" });
+  };
+
+  const handleFeedbackViewed = (scenario: Scenario, feedback: Feedback) => {
+    incrementSessionCount();
+    setView({ step: "feedback", scenario, feedback });
+  };
+
+  const handleStartNew = () => {
+    if (getSessionCount() >= FREE_SESSION_LIMIT) {
+      setView({ step: "upgrade" });
+    } else {
+      setView({ step: "setup" });
+    }
+  };
 
   const handleEndSession = async (
     scenario: Scenario,
@@ -732,11 +938,15 @@ export default function PracticePage() {
       if (!res.ok) throw new Error("Feedback request failed");
 
       const feedback: Feedback = await res.json();
-      setView({ step: "feedback", scenario, feedback });
+      handleFeedbackViewed(scenario, feedback);
     } catch {
       setView({ step: "chat", scenario });
     }
   };
+
+  if (!ready) return null;
+
+  const sessionsRemaining = FREE_SESSION_LIMIT - getSessionCount();
 
   return (
     <div className="min-h-screen">
@@ -745,8 +955,17 @@ export default function PracticePage() {
           <Link href="/" className="text-lg font-semibold tracking-tight">
             SalaryRep
           </Link>
+          {view.step !== "email-capture" && view.step !== "upgrade" && (
+            <span className="text-xs text-muted">
+              {sessionsRemaining} free session{sessionsRemaining !== 1 ? "s" : ""} remaining
+            </span>
+          )}
         </div>
       </header>
+
+      {view.step === "email-capture" && (
+        <EmailCapture onComplete={handleEmailComplete} />
+      )}
 
       {view.step === "setup" && (
         <SetupForm
@@ -758,7 +977,7 @@ export default function PracticePage() {
         <NegotiationChat
           key={JSON.stringify(view.scenario)}
           scenario={view.scenario}
-          onReset={() => setView({ step: "setup" })}
+          onReset={handleStartNew}
           onEndSession={(messages) =>
             handleEndSession(view.scenario, messages)
           }
@@ -775,10 +994,18 @@ export default function PracticePage() {
       {view.step === "feedback" && (
         <SessionFeedback
           feedback={view.feedback}
-          onTryAgain={() => setView({ step: "chat", scenario: view.scenario })}
-          onNewScenario={() => setView({ step: "setup" })}
+          onTryAgain={() => {
+            if (getSessionCount() >= FREE_SESSION_LIMIT) {
+              setView({ step: "upgrade" });
+            } else {
+              setView({ step: "chat", scenario: view.scenario });
+            }
+          }}
+          onNewScenario={handleStartNew}
         />
       )}
+
+      {view.step === "upgrade" && <UpgradeWall />}
     </div>
   );
 }

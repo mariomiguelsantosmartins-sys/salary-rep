@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.4.0] - 2026-02-09
+
+### Added
+- Email capture gate before first session (name + email stored in localStorage)
+- Session counter limiting free users to 3 practice sessions
+- "Sessions remaining" indicator in the header
+- Upgrade wall shown when free sessions are exhausted, with Basic and Pro plan options
+- Session count increments only when feedback is received (completing a full session)
+
 ## [0.3.0] - 2026-02-09
 
 ### Added
