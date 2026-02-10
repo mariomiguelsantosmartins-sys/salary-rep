@@ -291,25 +291,23 @@ function NegotiationChat({
   );
   const { messages, sendMessage, status, error } = useChat({
     transport,
-    messages: [
-      {
-        id: "system-start",
-        role: "user",
-        parts: [
-          {
-            type: "text" as const,
-            text: `Hi, I'm excited about the ${scenario.role} opportunity. I'd love to discuss the compensation package.`,
-          },
-        ],
-      },
-    ] as UIMessage[],
   });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const hasSentOpener = useRef(false);
 
   const isActive = status === "streaming" || status === "submitted";
   const hasEnoughMessages = messages.length >= 3;
+
+  useEffect(() => {
+    if (!hasSentOpener.current) {
+      hasSentOpener.current = true;
+      sendMessage({
+        text: `Hi, I'm excited about the ${scenario.role} opportunity. I'd love to discuss the compensation package.`,
+      });
+    }
+  }, [sendMessage, scenario.role]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
