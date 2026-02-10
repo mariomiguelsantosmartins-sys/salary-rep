@@ -261,7 +261,7 @@ const plans = [
       "All experience levels",
       "Detailed session feedback",
       "Multiple negotiation personas",
-      "Session history",
+      "Progress tracking",
     ],
     cta: "Get started",
     href: "/practice",

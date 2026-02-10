@@ -848,8 +848,8 @@ function UpgradeWall() {
             </span>
           </div>
           <p className="mb-4 text-sm text-muted">
-            Unlimited sessions, all personas, detailed feedback, session
-            history.
+            Unlimited sessions, all personas, and detailed feedback after
+            every negotiation.
           </p>
           <button className="inline-flex h-11 w-full items-center justify-center rounded-full bg-accent text-sm font-medium text-white transition-colors hover:bg-accent-hover">
             Upgrade to Basic
